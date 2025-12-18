@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>HDPE Tycoon Ultimate - Market & UI Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+    /* Button bán hàng - Hiệu ứng tiền */
+.sell-btn {
+    position: relative;
+    overflow: visible;
+}
+
+.sell-btn:hover {
+    animation: coinShine 1.5s infinite;
+}
+
+@keyframes coinShine {
+    0%, 100% { box-shadow: 0 0 10px var(--gold); }
+    50% { box-shadow: 0 0 25px var(--gold), 0 0 40px rgba(255, 204, 0, 0.5); }
+}
+
+.sell-btn:active {
+    animation: cashRegister 0.4s ease-out;
+}
+
+@keyframes cashRegister {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(0.95) rotate(-2deg); }
+    50% { transform: scale(1.05) rotate(2deg); }
+    75% { transform: scale(0.98) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Đồng xu bay lên */
+.coin-particle {
+    position: absolute;
+    font-size: 24px;
+    color: var(--gold);
+    pointer-events: none;
+    animation: coinFly 1s ease-out forwards;
+    text-shadow: 0 0 10px var(--gold);
+}
+
+@keyframes coinFly {
+    0% { 
+        transform: translateY(0) rotate(0deg) scale(0.5); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: translateY(-50px) rotate(180deg) scale(1); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg) scale(0.3); 
+        opacity: 0; 
+    }
+}
+    /* Button nén khí - Hiệu ứng compress */
+.compress-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.compress-btn::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.compress-btn:hover::before {
+    left: 100%;
+}
+
+.compress-btn:active {
+    animation: compressEffect 0.3s ease-out;
+}
+
+@keyframes compressEffect {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.9) scaleY(1.1); } /* Nén ngang, dãn dọc */
+    100% { transform: scale(1); }
+}
+
+/* Particles nén */
+.compress-particle {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: compressParticle 0.8s ease-out forwards;
+}
+
+@keyframes compressParticle {
+    0% { 
+        transform: translate(var(--x), var(--y)) scale(1); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translate(0, 0) scale(0); 
+        opacity: 0; 
+    }
+}
+    /* Thêm vào phần <style> */
+
+/* Animation cho nút chính - Máy nén thực tế */
+#main-btn {
+    position: relative;
+    overflow: visible !important; /* Cho phép hiệu ứng tràn ra ngoài */
+}
+
+/* Vòng sóng áp suất khi click */
+#main-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100%; height: 100%;
+    border: 3px solid var(--primary);
+    border-radius: 20px;
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#main-btn:active::before {
+    animation: pressureWave 0.6s ease-out;
+}
+
+@keyframes pressureWave {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Hiệu ứng khói khí phun - Nâng cao */
+.gas-puff {
+    position: absolute;
+    background: radial-gradient(circle, rgba(0, 242, 255, 0.6), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(8px);
+    z-index: 1000;
+    animation: puffOutRealistic 1.2s ease-out forwards;
+}
+
+@keyframes puffOutRealistic {
+    0% { 
+        transform: scale(0.3) translateY(0); 
+        opacity: 0.9; 
+    }
+    50% { 
+        transform: scale(1.5) translateY(-30px); 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: scale(2.5) translateY(-80px) translateX(var(--drift)); 
+        opacity: 0; 
+    }
+}
+
+/* Hiệu ứng rung lắc máy nén */
+#main-btn:active {
+    animation: machinePress 0.15s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes machinePress {
+    0%, 100% { transform: scale(1) translateY(0); }
+    25% { transform: scale(0.95) translateY(5px); }
+    50% { transform: scale(0.93) translateY(8px); }
+    75% { transform: scale(0.96) translateY(3px); }
+}
+
+/* Đèn cảnh báo nhấp nháy khi quá nhiệt */
+#main-btn.overheating::after {
+    animation: warningBlink 0.3s infinite;
+}
+
+@keyframes warningBlink {
+    0%, 100% { background: repeating-linear-gradient(90deg, #ffcc00, #ffcc00 10px, #000 10px, #000 20px); }
+    50% { background: repeating-linear-gradient(90deg, #ff0055, #ff0055 10px, #000 10px, #000 20px); }
+}
+        :root {
+            --bg-dark: #0b0c15;
+            --panel-bg: rgba(20, 25, 40, 0.95);
+            --primary: #00f2ff; /* Cyan Neon */
+            --secondary: #7000ff; /* Purple Neon */
+            --danger: #ff0055; /* Red Neon */
+            --gold: #ffcc00; /* Gold */
+            --text-main: #e0e6ed;
+            --border-glow: 0 0 10px rgba(0, 242, 255, 0.3);
+            --talent-tree: #00ff9d;
+            --chart-up: #00ff00;
+            --chart-down: #ff3333;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 20%),
+                url('https://www.transparenttextures.com/patterns/cubes.png');
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- LAYOUT CHÍNH --- */
+        .main-interface {
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            gap: 20px;
+            width: 98vw;
+            height: 95vh;
+            max-width: 1800px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .panel::before {
+            content: ''; position: absolute; top:0; left:0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        h2, h3 { margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        
+        /* --- CỘT TRÁI: THỐNG KÊ --- */
+        .stat-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin-bottom: 8px;
+            border-left: 3px solid var(--primary);
+        }
+        .stat-val { font-size: 1.3em; font-weight: bold; color: #fff; }
+        .currency { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+
+        /* MARKET CHART CSS */
+        .market-panel {
+            border: 1px solid #444;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            height: 300px; /* Cao hơn một chút cho đẹp */
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 4px; /* Khoảng cách giữa các nến */
+            position: relative;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+            overflow: hidden;
+        }
+        .candle {
+            width: 100%;
+            position: relative;
+            transition: all 0.5s;
+        }
+        .candle-body {
+            width: 100%;
+            position: absolute;
+            left: 0;
+            min-height: 2px;
+        }
+        .candle-wick {
+            width: 1px;
+            background: #888;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* --- CỘT GIỮA: SẢN XUẤT --- */
+        .center-stage {
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle, rgba(20,20,40,0.8), rgba(0,0,0,0.9));
+        }
+
+       /* --- TÌM VÀ THAY THẾ ĐOẠN #main-btn CŨ BẰNG ĐOẠN NÀY --- */
+#main-btn {
+    width: 220px;
+    height: 220px;
+    border-radius: 20px; /* Hình khối máy nén */
+    border: 6px solid #444;
+    background: linear-gradient(145deg, #2c3e50, #000);
+    box-shadow: 
+        inset 5px 5px 15px rgba(0,0,0,0.8),
+        0 0 20px rgba(0, 242, 255, 0.2),
+        10px 10px 20px rgba(0,0,0,0.6);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    z-index: 10;
+}
+
+#main-btn::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 10px);
+    pointer-events: none;
+}
+
+#main-btn::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 15px;
+    background: repeating-linear-gradient(90deg, #ffcc00, #ffcc00 10px, #000 10px, #000 20px);
+}
+
+#main-btn:active {
+    transform: scale(0.92) translateY(8px);
+    box-shadow: 0 0 40px rgba(0, 242, 255, 0.6);
+    border-color: var(--primary);
+}
+
+#main-btn:hover {
+    animation: machineVibrate 0.2s infinite ease-in-out;
+}
+
+@keyframes machineVibrate {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    50% { transform: translate(-1px, -1px) rotate(0.2deg); }
+    100% { transform: translate(1px, -1px) rotate(0deg); }
+}
+
+/* Dán thêm cái này vào ngay dưới đoạn trên */
+.gas-puff {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: puffOut 0.8s ease-out forwards;
+    z-index: 1000;
+}
+
+@keyframes puffOut {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(3) translateY(-50px); opacity: 0; }
+}
+        #main-btn:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+        #main-btn:hover { border-color: var(--primary); color: #fff; }
+        #main-btn i { font-size: 2.5em; margin-bottom: 10px; animation: pulseIcon 2s infinite; }
+        @keyframes pulseIcon { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
+
+        /* Nhiệt độ */
+        .temp-gauge {
+            width: 80%; height: 20px; background: #222; border-radius: 10px; margin-top: 30px;
+            position: relative; overflow: hidden; border: 1px solid #444;
+        }
+        .temp-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--gold), var(--danger));
+            transition: width 0.2s;
+        }
+        .temp-text { text-align: center; margin-top: 5px; font-size: 0.9em; color: #aaa; }
+
+        /* --- CỘT PHẢI: TABS --- */
+        .tab-header { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;}
+        .tab-btn {
+            flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border: none; color: #aaa;
+            cursor: pointer; font-family: inherit; font-weight: bold; border-radius: 5px;
+            transition: 0.3s; font-size: 0.85em; min-width: 60px;
+        }
+        .tab-btn.active { background: var(--secondary); color: #fff; box-shadow: 0 0 15px var(--secondary); }
+
+        .tab-content { display: none; overflow-y: auto; flex-grow: 1; padding-right: 5px; }
+        .tab-content.active { display: flex; flex-direction: column; gap: 10px; }
+        
+        .tab-content::-webkit-scrollbar { width: 5px; }
+        .tab-content::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
+
+        /* Item Nâng Cấp */
+        .upgrade-item {
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid transparent; transition: 0.2s; cursor: pointer; user-select: none;
+        }
+        .upgrade-item:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+        .u-info h4 { margin: 0; color: var(--primary); }
+        .u-info small { color: #888; display: block; margin-top: 3px; }
+        .u-btn { text-align: right; }
+        .cost { color: var(--gold); font-weight: bold; display: block; }
+        .lvl-badge { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-top: 5px; display: inline-block;}
+
+        /* --- TALENT SYSTEM CSS --- */
+        .tp-header {
+            background: linear-gradient(45deg, #004d33, #000);
+            padding: 15px; border-radius: 8px; border: 1px solid var(--talent-tree);
+            text-align: center; margin-bottom: 15px;
+        }
+        .talent-tree { display: flex; flex-direction: column; gap: 15px; position: relative; }
+        
+        .talent-node {
+            background: #1a1a2e; border: 1px solid #444; padding: 12px; border-radius: 8px;
+            display: flex; gap: 10px; align-items: center; cursor: pointer;
+            transition: 0.2s; position: relative; z-index: 1;
+        }
+        .talent-node:hover { border-color: var(--talent-tree); background: #222; }
+        .talent-node.locked { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+        .talent-node.maxed { border-color: var(--gold); background: rgba(255, 204, 0, 0.1); }
+        
+        .t-icon { 
+            width: 40px; height: 40px; background: #333; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; color: var(--talent-tree); font-size: 1.2em;
+        }
+        .t-data { flex: 1; }
+        .t-name { font-weight: bold; color: #fff; }
+        .t-desc { font-size: 0.8em; color: #aaa; margin-bottom: 5px; display:block;}
+        .t-cost { font-size: 0.8em; color: var(--talent-tree); font-weight: bold; }
+
+        /* Licenses */
+        .license-item {
+            border: 1px dashed #666; padding: 10px; margin-bottom: 5px; border-radius: 5px;
+            background: rgba(0,0,0,0.2);
+        }
+        .license-item.owned { border-style: solid; border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
+        .req-tag { display: inline-block; background: #333; color: #aaa; font-size: 0.7em; padding: 2px 5px; border-radius: 3px; margin-right: 5px; }
+        .req-tag.ok { color: #00ff00; }
+
+        /* Manager & Storage */
+        .manager-card {
+            background: linear-gradient(135deg, rgba(40,40,40,0.9), rgba(20,20,20,0.95));
+            border: 1px solid var(--secondary); padding: 20px; border-radius: 10px; text-align: center;
+        }
+        .toggle-btn {
+            background: #444; color: #fff; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer;
+        }
+        .toggle-btn.on { background: var(--secondary); box-shadow: 0 0 10px var(--secondary); }
+
+        /* --- ĐẦU TƯ MẠO HIỂM (STYLE CŨ) --- */
+        .invest-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            margin-top: 15px;
+        }
+        .chance-bar-bg {
+            height: 10px; background: #222; border-radius: 5px;
+            margin-bottom: 10px; position: relative; overflow: hidden; border: 1px solid #444;
+        }
+        .chance-fill {
+            height: 100%; width: 50%;
+            background: linear-gradient(90deg, #ff0055, #ffcc00, #00ff00);
+            transition: width 0.05s linear;
+        }
+        #invest-btn {
+            width: 100%; padding: 12px; background: linear-gradient(45deg, #800000, #ff0000);
+            color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+            font-family: 'Rajdhani', sans-serif; font-size: 1.1em;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3); transition: 0.2s;
+        }
+        #invest-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px red; }
+
+        /* Map Selector */
+        .map-selector {
+            margin-top: auto; padding-top: 15px; border-top: 1px solid #333;
+            display: flex; gap: 10px;
+        }
+        .map-btn { flex: 1; padding: 10px; border: 1px solid #444; background: #222; color: #555; cursor: not-allowed; border-radius: 5px; text-align: center; }
+        .map-btn.active { border-color: var(--primary); background: rgba(0, 242, 255, 0.1); color: #fff; cursor: default; }
+        
+        /* Floating Gas Leak */
+        .gas-leak {
+            position: absolute; width: 60px; height: 60px;
+            background: radial-gradient(circle, rgba(0,255,0,0.8), transparent 70%);
+            border-radius: 50%; cursor: pointer; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #fff;
+            animation: floatGas 6s infinite ease-in-out;
+            filter: blur(2px);
+            transition: 0.2s;
+        }
+        .gas-leak:hover { filter: blur(0); transform: scale(1.2); }
+        .gas-leak::after { content: '⚠️'; font-size: 20px; }
+        @keyframes floatGas { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
+
+        .float-txt {
+            position: absolute; font-weight: bold; pointer-events: none; z-index: 999;
+            animation: flyUp 1s forwards; font-size: 1.2em; text-shadow: 0 2px 2px #000;
+        }
+        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); z-index: 99999;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px); display: none;
+        }
+        .modal-content {
+            background: #111; border: 2px solid var(--primary); padding: 40px; border-radius: 20px;
+            text-align: center; max-width: 80%; box-shadow: 0 0 50px rgba(0, 242, 255, 0.2);
+            animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-btn {
+            background: var(--primary); color: #000; border: none; padding: 10px 30px;
+            font-size: 1.2em; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 20px;
+        }
+        @keyframes zoomIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        #dev-cheat-btn {
+            position: fixed; bottom: 5px; left: 5px; width: 15px; height: 15px;
+            background-color: #ff0000; border-radius: 50%; cursor: pointer; z-index: 999999;
+            opacity: 0.2; transition: all 0.3s;
+        }
+        /* Hệ thống Popup chính giữa màn hình */
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Làm mờ nền phía sau */
+    display: none; /* Mặc định ẩn */
+    justify-content: center;
+    align-items: center;
+    z-index: 999999; /* Luôn nằm trên cùng */
+    backdrop-filter: blur(5px); /* Làm nhòe nền cho đẹp */
+}
+
+.popup-box {
+    background: #1a1b26;
+    border: 3px solid #00f2ff;
+    border-radius: 20px;
+    padding: 40px;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0, 242, 255, 0.4);
+    animation: popupShow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+
+@keyframes popupShow {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.popup-box h1 {
+    font-family: 'Chakra Petch', sans-serif; /* Đảm bảo tiêu đề popup không lỗi */
+    font-weight: 700;
+}
+
+.popup-box p {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 500;
+}
+
+.popup-close-btn {
+    background: linear-gradient(45deg, #00f2ff, #7000ff);
+    color: white;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    text-transform: uppercase;
+}
+
+.popup-close-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.6);
+}
+    </style>
+</head>
+<body>
+
+<div class="main-interface">
+    <div class="panel">
+        <h3><i class="fas fa-chart-line"></i> XƯỞNG SỐ 1</h3>
+        
+        <div class="stat-row">
+            <span><i class="fas fa-wallet"></i> Tài sản</span>
+            <div class="stat-val currency">$<span id="money-display">0</span></div>
+        </div>
+        <div class="stat-row">
+            <span><i class="fas fa-burn"></i> Khí Gas</span>
+            <div class="stat-val" style="color: var(--primary);"><span id="gas-display">0</span> <small>L</small></div>
+        </div>
+        <div class="stat-row">
+            <span><i class="fas fa-cubes"></i> Nhựa HDPE</span>
+            <div class="stat-val" style="color: var(--secondary);"><span id="hdpe-display">0</span> <small>kg</small></div>
+        </div>
+        <div class="stat-row" style="border-left-color: var(--talent-tree)">
+            <span><i class="fas fa-brain"></i> Điểm TP</span>
+            <div class="stat-val" style="color: var(--talent-tree);"><span id="tp-display">0</span></div>
+        </div>
+
+        <div class="invest-section">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="font-size: 0.8em; color: #aaa;">TỶ LỆ THẮNG:</span>
+                <span id="win-chance-txt" style="font-weight: bold; color: var(--gold);">50%</span>
+            </div>
+            
+            <div class="chance-bar-bg">
+                <div id="chance-bar-fill" class="chance-fill"></div>
+                <div style="position: absolute; left: 50%; top:0; height: 100%; width: 2px; background: rgba(255,255,255,0.3);"></div>
+            </div>
+
+            <button id="invest-btn" onclick="investRisky()">
+                <i class="fas fa-dice"></i> đầu tư mạo hiểm
+                <div style="font-size: 0.7em; font-weight: normal; opacity: 0.8;">Cần tối thiểu $5,000</div>
+            </button>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.9em; color: #888; text-align: center;">
+            <p>Sản lượng tự động: <span id="auto-rate-display">0</span> /s</p>
+        </div>
+
+        <div class="map-selector">
+            <div class="map-btn active"><i class="fas fa-industry"></i> Xưởng 1</div>
+            <div class="map-btn" title="Cần hoàn thành Xưởng 1"><i class="fas fa-lock"></i> Xưởng 2</div>
+        </div>
+    </div>
+
+    <div class="panel center-stage">
+        <button id="main-btn" onclick="clickMine(event)">
+           <i class="fas fa-compress-alt" style="font-size: 3.5em; color: var(--primary); filter: drop-shadow(0 0 10px var(--primary));"></i>
+            <div>HÚT KHÍ</div>
+        </button>
+
+        <div class="temp-gauge">
+            <div class="temp-fill" id="temp-bar"></div>
+        </div>
+        <div class="temp-text">NHIỆT ĐỘ MÁY: <span id="temp-val">0</span>°C</div>
+        <div id="overheat-warning" style="color: var(--danger); font-weight: bold; display: none; margin-top: 10px; animation: blink 0.5s infinite;">⚠️ MÁY QUÁ NHIỆT! ĐANG LÀM MÁT...</div>
+
+        <div style="margin-top: 30px; display: flex; gap: 10px;">
+            <button onclick="convertResource()" style="padding: 10px 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--primary); color: #fff; cursor: pointer; border-radius: 5px;">
+                <i class="fas fa-compress-arrows-alt"></i> Nén Khí (5L -> 1Kg HDPE)
+            </button>
+            <button onclick="sellAll()" style="padding: 10px 20px; background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: var(--gold); cursor: pointer; border-radius: 5px;">
+                <i class="fas fa-dollar-sign"></i> Bán Hết Kho
+            </button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="tab-header">
+            <button class="tab-btn active" onclick="switchTab('upgrade')"><i class="fas fa-hammer"></i> Nâng Cấp</button>
+            <button class="tab-btn" onclick="switchTab('talent')"><i class="fas fa-brain"></i> Thiên Phú</button>
+            <button class="tab-btn" onclick="switchTab('manager')"><i class="fas fa-user-tie"></i> Quản Lý</button>
+            <button class="tab-btn" onclick="switchTab('storage')"><i class="fas fa-warehouse"></i> Kho</button>
+            <button class="tab-btn" onclick="switchTab('market')"><i class="fas fa-chart-bar"></i> Thị Trường</button>
+        </div>
+
+        <div id="tab-upgrade" class="tab-content active">
+            <div class="upgrade-item" onclick="buyUpgrade('clicker')">
+                <div class="u-info">
+                    <h4><i class="fas fa-mouse-pointer"></i> Van Áp Suất</h4>
+                    <small>Tăng lượng khí mỗi lần bấm</small>
+                </div>
+                <div class="u-btn">
+                    <span class="cost">$<span id="cost-clicker">50</span></span>
+                    <span class="lvl-badge">Lv.<span id="lvl-clicker">1</span></span>
+                </div>
+            </div>
+            <div class="upgrade-item" onclick="buyUpgrade('miner')">
+                <div class="u-info">
+                    <h4><i class="fas fa-robot"></i> Máy Hút Tự Động</h4>
+                    <small>Tự động hút khí mỗi giây</small>
+                </div>
+                <div class="u-btn">
+                    <span class="cost">$<span id="cost-miner">200</span></span>
+                    <span class="lvl-badge">Lv.<span id="lvl-miner">0</span></span>
+                </div>
+            </div>
+            <div class="upgrade-item" onclick="buyUpgrade('coolant')">
+                <div class="u-info">
+                    <h4><i class="fas fa-snowflake"></i> Hệ Thống Tản Nhiệt</h4>
+                    <small>Giảm nhiệt độ nhanh hơn</small>
+                </div>
+                <div class="u-btn">
+                    <span class="cost">$<span id="cost-coolant">500</span></span>
+                    <span class="lvl-badge">Lv.<span id="lvl-coolant">1</span></span>
+                </div>
+            </div>
+             <div class="upgrade-item" onclick="buyUpgrade('compressor')">
+                <div class="u-info">
+                    <h4><i class="fas fa-compress"></i> Máy Nén Auto</h4>
+                    <small>Tự đổi Khí sang Nhựa</small>
+                </div>
+                <div class="u-btn">
+                    <span class="cost">$<span id="cost-compressor">1000</span></span>
+                    <span class="lvl-badge">Lv.<span id="lvl-compressor">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-talent" class="tab-content">
+            <div class="tp-header">
+                <div style="font-size:1.5em; font-weight:bold; color:#fff;">
+                    <span id="tp-val-big">0</span> TP
+                </div>
+                <div style="display:flex; gap:5px; justify-content:center; margin-top:5px;">
+                    <input type="number" id="tp-buy-input" value="1" style="width:50px; padding:5px; border-radius:5px; border:none; text-align:center;">
+                    <button onclick="buyTP()" style="background:var(--talent-tree); color:#000; border:none; padding:5px 10px; cursor:pointer; border-radius:5px; font-weight:bold;">
+                        MUA ($1k/điểm)
+                    </button>
+                </div>
+            </div>
+
+            <div class="talent-tree">
+                <div class="talent-node" onclick="upgradeTalent('efficiency')">
+                    <div class="t-icon"><i class="fas fa-hand-sparkles"></i></div>
+                    <div class="t-data">
+                        <div class="t-name">Hiệu Suất Tay</div>
+                        <span class="t-desc">Tăng lực hút khi click (+10%/cấp)</span>
+                        <div class="t-cost">Chi phí: <span id="cost-talent-efficiency">1</span> TP</div>
+                    </div>
+                    <div class="lvl-badge">Lv.<span id="lvl-talent-efficiency">0</span>/20</div>
+                </div>
+
+                <div class="talent-node locked" id="node-luck" onclick="upgradeTalent('luck')">
+                    <div class="t-icon"><i class="fas fa-dice"></i></div>
+                    <div class="t-data">
+                        <div class="t-name">May Mắn Khai Thác</div>
+                        <span class="t-desc">Tỷ lệ 5% hút x10 khí (Tăng theo cấp)</span>
+                        <div class="t-cost">Yêu cầu: Hiệu Suất Lv.5</div>
+                    </div>
+                    <div class="lvl-badge">Lv.<span id="lvl-talent-luck">0</span>/10</div>
+                </div>
+
+                <div class="talent-node" onclick="upgradeTalent('grease')">
+                    <div class="t-icon"><i class="fas fa-oil-can"></i></div>
+                    <div class="t-data">
+                        <div class="t-name">Bôi Trơn Máy</div>
+                        <span class="t-desc">Tăng tốc độ Auto Miner (+5%/cấp)</span>
+                        <div class="t-cost">Chi phí: <span id="cost-talent-grease">1</span> TP</div>
+                    </div>
+                    <div class="lvl-badge">Lv.<span id="lvl-talent-grease">0</span>/50</div>
+                </div>
+
+                <div style="margin-top:20px; border-top:1px solid #444; padding-top:10px;">
+                    <h4 style="color:var(--gold)">GIẤY PHÉP</h4>
+                    
+                    <div class="license-item" id="lic-export" onclick="buyLicense('export')">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="font-weight:bold; color:#fff"><i class="fas fa-globe"></i> Giấy Phép Xuất Khẩu</span>
+                            <span style="color:var(--gold)">$500,000</span>
+                        </div>
+                        <div style="font-size:0.8em; color:#aaa; margin-top:5px;">
+                            Tác dụng: Giá bán nhựa luôn tăng 20%.
+                        </div>
+                        <div style="margin-top:5px;">
+                            <span class="req-tag" id="req-export-lvl">Cần: Hiệu Suất Lv.10</span>
+                        </div>
+                    </div>
+
+                    <div class="license-item" id="lic-cooling" onclick="buyLicense('cooling')">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="font-weight:bold; color:#fff"><i class="fas fa-snowflake"></i> Chứng Chỉ ISO Môi Trường</span>
+                            <span style="color:var(--gold)">$1,000,000</span>
+                        </div>
+                        <div style="font-size:0.8em; color:#aaa; margin-top:5px;">
+                            Tác dụng: Giảm 50% nhiệt sinh ra.
+                        </div>
+                        <div style="margin-top:5px;">
+                            <span class="req-tag" id="req-cooling-res">Cần: 50,000 Nhựa trong kho</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-manager" class="tab-content">
+            <div class="manager-card">
+                <div class="manager-avatar"><i class="fas fa-user-astronaut"></i></div>
+                <h3>Giám Đốc Kỹ Thuật</h3>
+                <p style="font-size: 0.8em; color: #888; margin-bottom: 15px;">
+                    "Tôi sẽ tự động dùng tiền để nâng cấp các máy móc."
+                </p>
+                <div id="manager-locked">
+                    <button class="upgrade-item" style="width: 100%; justify-content: center; background: #333;" onclick="hireManager()">
+                        Thuê: $1,000,000
+                    </button>
+                </div>
+                <div id="manager-unlocked" style="display: none;">
+                    <div class="manager-status">Trạng thái: <span id="mgr-status-text" style="color: var(--secondary)">ĐANG TẮT</span></div>
+                    <button id="mgr-toggle" class="toggle-btn" onclick="toggleManager()">BẬT QUẢN LÝ</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-storage" class="tab-content">
+            <div class="upgrade-item" style="cursor: default; flex-direction: column; align-items: flex-start;">
+                <h4 style="color: var(--primary)">KHO TRỮ NHỰA</h4>
+                <div style="font-size: 1.2em; margin: 10px 0;">
+                    Đang chứa: <span id="storage-display" style="color: var(--secondary); font-weight: bold; font-size: 1.5em;">0</span> kg
+                </div>
+                <input type="number" id="storage-input" placeholder="Nhập số lượng..." 
+                       style="width: 90%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 10px; font-family: inherit;">
+                <div style="display: flex; gap: 5px; width: 100%;">
+                    <button onclick="depositAll()" class="upgrade-item" style="flex: 1; justify-content: center; background: #333; margin:0; border: 1px solid #555;">
+                        <i class="fas fa-arrow-down"></i> Gửi Hết
+                    </button>
+                    <button onclick="withdrawX()" class="upgrade-item" style="flex: 1; justify-content: center; background: var(--secondary); margin:0; color: white;">
+                        <i class="fas fa-arrow-up"></i> Rút Ra
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-market" class="tab-content">
+            <div style="display:flex; flex-direction:column; height:100%;">
+                <div style="text-align:center; margin-bottom:10px;">
+                    <h3>SÀN GIAO DỊCH HDPE</h3>
+                    <h1 id="current-price-display" style="color:var(--gold); font-size: 2.5em;">$10.00</h1>
+                </div>
+                <div class="market-panel">
+                    <div class="chart-container" id="chart-display">
+                        </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:0.7em; color:#666;">
+                        <span>-60s</span>
+                        <span>Hiện tại</span>
+                    </div>
+                </div>
+                <div style="margin-top:15px; font-size:0.9em; color:#aaa; text-align:center;">
+                    *Giá bán Nhựa HDPE biến động mỗi 2 giây. <br>Hãy canh giá cao để bán!
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="big-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h1 id="modal-title" style="font-size: 3em; margin: 0;">KẾT QUẢ</h1>
+        <p id="modal-msg" style="font-size: 1.5em; margin: 20px 0;"></p>
+        <button onclick="closeModal()" class="modal-btn">ĐÃ HIỂU</button>
+    </div>
+</div>
+
+<div id="dev-cheat-btn" onclick="runDevCheat()"></div>
+
+<div id="toast-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100000; display: flex; flex-direction: column; gap: 10px; align-items: center;"></div>
+
+<script>
+    // --- HELPER: TOAST (Sửa lỗi chồng chất: Giới hạn 2 cái) ---
+    function createToast(msg, type = 'normal') {
+        let container = document.getElementById('toast-container');
+        
+        while (container.children.length >= 2) {
+            container.removeChild(container.firstChild);
+        }
+
+        let toast = document.createElement('div');
+        let color = '#fff';
+        let bg = 'rgba(0,0,0,0.9)';
+        let border = 'var(--primary)';
+        
+        if (type === 'error') { color = 'var(--danger)'; border = 'var(--danger)'; }
+        if (type === 'money') { color = 'var(--gold)'; border = 'var(--gold)'; }
+        if (type === 'success') { color = '#00ff00'; border = '#00ff00'; }
+
+        toast.style.cssText = `
+            padding: 15px 20px; background: ${bg}; border-left: 5px solid ${border};
+            color: ${color}; border-radius: 5px; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); animation: slideIn 0.3s ease-out; min-width: 250px; text-align: center;
+        `;
+        toast.innerHTML = msg;
+        
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => { if(toast.parentNode) toast.remove(); }, 500);
+        }, 3000);
+    }
+
+    function createFloatText(x, y, text, color) {
+        let el = document.createElement('div');
+        el.className = 'float-txt';
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.color = color;
+        el.innerText = text;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+    }
+
+    // --- GAME DATA ---
+    let game = {
+        money: 0, gas: 0, hdpe: 0, temp: 0, storage: 0, isOverheat: false,
+        manager: { owned: false, active: false, timer: 0 },
+        items: {
+            clicker: { lv: 1, cost: 50, name: "Van Áp Suất" },
+            miner:   { lv: 0, cost: 200, name: "Máy Hút Tự Động" },
+            coolant: { lv: 1, cost: 500, name: "Tản Nhiệt" },
+            compressor: { lv: 0, cost: 1000, name: "Máy Nén Auto" }
+        },
+        invest: { chance: 50, direction: 1, speed: 2 },
+        // Thiên Phú Mới
+        talent: {
+            tp: 0,
+            levels: {
+                efficiency: 0, // Click boost
+                luck: 0,       // Crit chance
+                grease: 0      // Auto speed
+            }
+        },
+        licenses: {
+            export: false,
+            cooling: false
+        },
+        // Thị trường (Giá biến động)
+        market: {
+            currentPrice: 10,
+            history: [] // Lưu lịch sử để vẽ nến
+        }
+    };
+
+    // --- LOGIC GAME CHÍNH ---
+    function clickMine(e) {
+      // --- CODE THÊM: HIỆU ỨNG KHÍ (PARTICLES) ---
+    for (let i = 0; i < 5; i++) {
+        let puff = document.createElement('div');
+        puff.className = 'gas-puff';
+        // Vị trí xuất hiện xung quanh nút bấm
+        let rect = document.getElementById('main-btn').getBoundingClientRect();
+        puff.style.left = (rect.left + rect.width / 2 + (Math.random() - 0.5) * 100) + 'px';
+        puff.style.top = (rect.top + rect.height / 2) + 'px';
+        document.body.appendChild(puff);
+        setTimeout(() => puff.remove(), 800);
+  
+    // ------------------------------------------
+
+    let baseAmount = 1 + (game.items.clicker.lv * 0.5);
+    // ... (giữ nguyên phần logic game phía dưới)
+    let talentMult = 1 + (game.talent.levels.efficiency * 0.1);
+    // ...
+}
+       // 1. Kiểm tra nếu đang quá nhiệt thì không cho bấm
+    if (game.isOverheat) { 
+        createToast("MÁY ĐANG QUÁ TẢI! Hãy đợi nguội bớt.", "error"); 
+        return; 
+    }
+    // === HIỆU ỨNG KHÍ NÂNG CAO ===
+    let btn = document.getElementById('main-btn');
+    let rect = btn.getBoundingClientRect();
+    
+    for (let i = 0; i < 8; i++) { // Tăng số lượng puff
+        let puff = document.createElement('div');
+        puff.className = 'gas-puff';
+        
+        // Random vị trí xung quanh nút
+        let angle = (Math.PI * 2 * i) / 8;
+        let distance = 50 + Math.random() * 50;
+        let x = rect.left + rect.width / 2 + Math.cos(angle) * distance;
+        let y = rect.top + rect.height / 2 + Math.sin(angle) * distance;
+        
+        puff.style.left = x + 'px';
+        puff.style.top = y + 'px';
+        puff.style.width = (30 + Math.random() * 30) + 'px';
+        puff.style.height = puff.style.width;
+        puff.style.setProperty('--drift', (Math.random() - 0.5) * 100 + 'px');
+        
+        document.body.appendChild(puff);
+        setTimeout(() => puff.remove(), 1200);
+    }
+
+    // Hiệu ứng khói (giữ nguyên từ code trước)
+    for (let i = 0; i < 5; i++) {
+        let puff = document.createElement('div');
+        puff.className = 'gas-puff';
+        let rect = document.getElementById('main-btn').getBoundingClientRect();
+        puff.style.left = (rect.left + rect.width / 2 + (Math.random() - 0.5) * 100) + 'px';
+        puff.style.top = (rect.top + rect.height / 2) + 'px';
+        document.body.appendChild(puff);
+        setTimeout(() => puff.remove(), 800);
+    }
+
+    let baseAmount = 1 + (game.items.clicker.lv * 0.5);
+    let talentMult = 1 + (game.talent.levels.efficiency * 0.1);
+    let finalAmount = baseAmount * talentMult;
+
+    // Tính toán chí mạng
+    let critChance = game.talent.levels.luck * 0.05;
+    if (Math.random() < critChance) {
+        finalAmount *= 10;
+        createFloatText(e.clientX, e.clientY, "CRIT X10!", "#ffcc00");
+    }
+
+    game.gas += finalAmount;
+    
+    // 2. Tăng nhiệt và kiểm tra quá nhiệt ngay lập tức
+    game.temp += 2; 
+    if(game.temp >= 100) {
+        game.temp = 100;
+        game.isOverheat = true; // Khóa máy ngay tại đây
+        createToast("CẢNH BÁO: HỆ THỐNG QUÁ NHIỆT!", "error");
+    }
+    
+    createFloatText(e.clientX, e.clientY, `+${finalAmount.toFixed(1)} Gas`, '#00f2ff');
+    updateUI();
+
+        game.gas += finalAmount;
+        game.temp += 2;
+        if(game.temp > 100) game.temp = 100;
+        
+        createFloatText(e.clientX, e.clientY, `+${finalAmount.toFixed(1)} Gas`, '#00f2ff');
+        updateUI();
+    }
+    // Cập nhật hàm convertResource() - Thêm hiệu ứng nén
+function convertResource() {
+    if (game.gas >= 5) {
+        let btn = event.target.closest('button');
+        let rect = btn.getBoundingClientRect();
+        
+       // Tạo 8 puff khí xung quanh
+        for (let i = 0; i < 8; i++) {
+            let puff = document.createElement('div');
+            puff.className = 'gas-puff';
+            
+            let angle = (Math.PI * 2 * i) / 8;
+            let distance = 50 + Math.random() * 50;
+            let x = rect.left + rect.width / 2 + Math.cos(angle) * distance;
+            let y = rect.top + rect.height / 2 + Math.sin(angle) * distance;
+            
+            puff.style.left = x + 'px';
+            puff.style.top = y + 'px';
+            puff.style.width = (30 + Math.random() * 30) + 'px';
+            puff.style.height = puff.style.width;
+            puff.style.setProperty('--drift', (Math.random() - 0.5) * 100 + 'px');
+            
+            document.body.appendChild(puff);
+            setTimeout(() => puff.remove(), 1200);
+        }
+        
+        let packs = Math.floor(game.gas / 5);
+        game.gas -= packs * 5;
+        game.hdpe += packs;
+        createToast(`Nén được ${packs}kg Nhựa`, 'success');
+        updateUI();
+    } else {
+        createToast('Cần 5L khí!', 'error');
+    }
+}
+
+// Cập nhật hàm sellAll() - Thêm hiệu ứng tiền
+function sellAll() {
+    if (game.hdpe <= 0) { createToast('Hết hàng!', 'error'); return; }
+    
+    let btn = event.target.closest('button');
+    let rect = btn.getBoundingClientRect();
+    
+    // Tạo đồng xu bay lên
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            let coin = document.createElement('div');
+            coin.className = 'coin-particle';
+            coin.innerText = '💰';
+            
+            let x = rect.left + rect.width / 2 + (Math.random() - 0.5) * 100;
+            let y = rect.top + rect.height / 2;
+            
+            coin.style.left = x + 'px';
+            coin.style.top = y + 'px';
+            
+            document.body.appendChild(coin);
+            setTimeout(() => coin.remove(), 1000);
+        }, i * 50); // Delay giữa các đồng xu
+    }
+    
+    let price = game.market.currentPrice;
+    if (game.licenses.export) price *= 1.2;
+
+    let earned = Math.floor(game.hdpe * price);
+    game.money += earned;
+    game.hdpe = 0;
+    createToast(`Bán hết với giá $${price.toFixed(2)}/kg. Thu về $${earned.toLocaleString()}`, 'money');
+    updateUI();
+}
+
+    // --- UPGRADE SYSTEM ---
+    function buyUpgrade(type) {
+        let item = game.items[type];
+        if (game.money >= item.cost) {
+            game.money -= item.cost;
+            item.lv++;
+            item.cost = Math.floor(item.cost * 1.5);
+            createToast(`Nâng cấp ${item.name} lên Lv.${item.lv}`, 'success');
+            updateUI();
+        } else { createToast('Không đủ tiền!', 'error'); }
+    }
+
+    // --- TALENT SYSTEM ---
+    function buyTP() {
+        let input = document.getElementById('tp-buy-input');
+        let amount = parseInt(input.value);
+        if(!amount || amount < 1) amount = 1;
+
+        let costPerTP = 1000; // Giá rẻ 1k
+        let totalCost = amount * costPerTP;
+
+        if (game.money >= totalCost) {
+            game.money -= totalCost;
+            game.talent.tp += amount;
+            createToast(`Đã mua ${amount} TP`, 'success');
+            updateUI();
+        } else {
+            createToast(`Cần $${totalCost.toLocaleString()} để mua!`, 'error');
+        }
+    }
+
+    function upgradeTalent(type) {
+        let currentLv = game.talent.levels[type];
+        let maxLv = (type === 'grease') ? 50 : (type === 'efficiency' ? 20 : 10);
+        
+        if (currentLv >= maxLv) {
+            createToast("Đã đạt cấp tối đa!", "error");
+            return;
+        }
+
+        if (type === 'luck' && game.talent.levels.efficiency < 5) {
+            createToast("Cần mở khóa Hiệu Suất Lv.5 trước!", "error");
+            return;
+        }
+
+        let cost = Math.floor(1 + (currentLv * 0.5)); 
+
+        if (game.talent.tp >= cost) {
+            game.talent.tp -= cost;
+            game.talent.levels[type]++;
+            updateUI();
+        } else {
+            createToast(`Cần ${cost} TP!`, 'error');
+        }
+    }
+
+    function buyLicense(type) {
+        if(game.licenses[type]) return; 
+
+        let cost = 0;
+        let canBuy = false;
+
+        if(type === 'export') {
+            cost = 500000;
+            if(game.talent.levels.efficiency >= 10) canBuy = true;
+            else createToast("Yêu cầu: Hiệu Suất Lv.10", "error");
+        }
+        else if(type === 'cooling') {
+            cost = 1000000;
+            if(game.storage >= 50000) canBuy = true; 
+            else createToast("Yêu cầu: Kho phải chứa 50,000kg nhựa", "error");
+        }
+
+        if(canBuy) {
+            if(game.money >= cost) {
+                game.money -= cost;
+                game.licenses[type] = true;
+                createToast("Mua giấy phép thành công!", "success");
+                updateUI();
+            } else {
+                createToast("Không đủ tiền!", "error");
+            }
+        }
+    }
+
+    // --- MARKET SYSTEM (CANDLESTICK CHART) ---
+    function updateMarket() {
+        let volatility = 2.0; 
+        let change = (Math.random() - 0.5) * volatility;
+        let open = game.market.currentPrice;
+        let close = open + change;
+        
+        if(close < 5) close = 5;
+        if(close > 100) close = 100;
+
+        game.market.currentPrice = close;
+
+        // Lưu nến
+        let high = Math.max(open, close) + Math.random();
+        let low = Math.min(open, close) - Math.random();
+        
+        game.market.history.push({ open, close, high, low });
+        if(game.market.history.length > 30) game.market.history.shift(); // Hiện 30 nến
+
+        drawChart();
+    }
+
+    function drawChart() {
+        let container = document.getElementById('chart-display');
+        container.innerHTML = ''; 
+
+        let minP = 1000, maxP = 0;
+        game.market.history.forEach(c => {
+            if(c.high > maxP) maxP = c.high;
+            if(c.low < minP) minP = c.low;
+        });
+        let range = maxP - minP || 1;
+
+        game.market.history.forEach(c => {
+            let isUp = c.close >= c.open;
+            let color = isUp ? '#00ff00' : '#ff3333';
+            
+            let hPercent = ((c.high - minP) / range) * 80;
+            let lPercent = ((c.low - minP) / range) * 80;
+            let oPercent = ((c.open - minP) / range) * 80;
+            let cPercent = ((c.close - minP) / range) * 80;
+
+            let candle = document.createElement('div');
+            candle.className = 'candle';
+            candle.style.height = '100%';
+            
+            let wick = document.createElement('div');
+            wick.className = 'candle-wick';
+            wick.style.bottom = lPercent + '%';
+            wick.style.height = (hPercent - lPercent) + '%';
+            wick.style.backgroundColor = color;
+
+            let body = document.createElement('div');
+            body.className = 'candle-body';
+            body.style.bottom = Math.min(oPercent, cPercent) + '%';
+            body.style.height = Math.max(0.5, Math.abs(cPercent - oPercent)) + '%';
+            body.style.backgroundColor = color;
+
+            candle.appendChild(wick);
+            candle.appendChild(body);
+            container.appendChild(candle);
+        });
+
+        document.getElementById('current-price-display').innerText = `$${game.market.currentPrice.toFixed(2)}`;
+    }
+
+    // --- OTHER SYSTEMS ---
+    function depositAll() {
+        if(game.hdpe > 0) { game.storage += game.hdpe; game.hdpe = 0; updateUI(); }
+        else createToast("Không có nhựa!", "error");
+    }
+    function withdrawX() {
+        let v = parseInt(document.getElementById('storage-input').value);
+        if(!v) return;
+        if(game.storage >= v) { game.storage -= v; game.hdpe += v; updateUI(); createToast(`Rút ${v}kg`, 'success'); }
+        else createToast("Kho thiếu hàng!", "error");
+    }
+    function hireManager() {
+        if(game.money >= 1000000) {
+            game.money -= 1000000; game.manager.owned = true;
+            document.getElementById('manager-locked').style.display='none';
+            document.getElementById('manager-unlocked').style.display='block';
+            updateUI();
+        } else createToast("Thiếu tiền!", "error");
+    }
+    function toggleManager() { game.manager.active = !game.manager.active; updateUI(); }
+    
+    function switchTab(t) {
+        document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active');
+        
+        // Highlight logic
+        let btns = document.querySelectorAll('.tab-btn');
+        if(t==='upgrade') btns[0].classList.add('active');
+        if(t==='talent') btns[1].classList.add('active');
+        if(t==='manager') btns[2].classList.add('active');
+        if(t==='storage') btns[3].classList.add('active');
+        if(t==='market') btns[4].classList.add('active');
+    }
+
+    // --- ĐẦU TƯ MẠO HIỂM (STYLE CŨ + MODAL TO) ---
+    function updateInvestBar() {
+        game.invest.chance += (game.invest.direction * game.invest.speed);
+        if (game.invest.chance >= 60) {
+            game.invest.chance = 60; game.invest.direction = -1;
+        } else if (game.invest.chance <= 0) {
+            game.invest.chance = 0; game.invest.direction = 1;
+        }
+
+        let barFill = document.getElementById('chance-bar-fill');
+        let txtWin = document.getElementById('win-chance-txt');
+        
+        if(barFill && txtWin) {
+            barFill.style.width = game.invest.chance + "%";
+            txtWin.innerText = Math.floor(game.invest.chance) + "%";
+            if(game.invest.chance < 20) txtWin.style.color = 'var(--danger)';
+            else if(game.invest.chance > 50) txtWin.style.color = '#00ff00';
+            else txtWin.style.color = 'var(--gold)';
+        }
+    }
+
+    // --- ĐOẠN CODE ĐẦU TƯ TẤT TAY MỚI ---
+// 1. Hàm dùng chung để hiện thông báo bất cứ lúc nào
+function showMyPopup(title, message, titleColor) {
+    document.getElementById('p-title').innerText = title;
+    document.getElementById('p-title').style.color = titleColor;
+    document.getElementById('p-message').innerHTML = message;
+    document.getElementById('custom-popup').style.display = 'flex';
+}
+
+// 2. Hàm để đóng thông báo
+function closeMyPopup() {
+    document.getElementById('custom-popup').style.display = 'none';
+}
+
+// 3. Logic ĐẦU TƯ TẤT TAY (Đã tích hợp bảng thông báo mới)
+function investRisky() {
+    // Kiểm tra vốn tối thiểu 5000
+    if (game.money < 5000) {
+        showMyPopup("CẢNH BÁO", "Dưới $5,000 mà đầu tư vào HDPE thì khác gì muối bỏ biển!", "#ff0055");
+        return;
+    }
+
+    let allInAmount = game.money; // Lấy toàn bộ tiền
+    let winChance = game.invest.chance; // Lấy tỷ lệ thắng hiện tại trên thanh bar
+    let isWin = (Math.random() * 100) <= winChance;
+
+    if (isWin) {
+        // THẮNG: Nhân đôi tài sản
+        game.money += allInAmount;
+        showMyPopup(
+            "THẮNG LỚN!", 
+            `HDPE thì ngon nuôn , <br>Tài sản nhân đôi!`, 
+            "#00ff9d"
+        );
+    } else {
+        // THUA: Mất trắng
+        game.money = 0;
+        showMyPopup(
+            "MẤT TRẮNG!", 
+            `chớp mắt một cái là còn cái lịt nuôn`, 
+            "#ff0055"
+        );
+    }
+
+    updateUI(); // Cập nhật lại số tiền trên màn hình chính
+}
+
+
+    // --- MAIN LOOP (100ms) ---
+    setInterval(() => {
+        updateInvestBar();
+
+        if (game.items.miner.lv > 0 && !game.isOverheat) {
+            let speedMult = 1 + (game.talent.levels.grease * 0.05);
+            game.gas += (game.items.miner.lv * 0.2 * speedMult) / 10;
+            game.temp += 0.05;
+        }
+        
+        let cool = 0.1 + (game.items.coolant.lv * 0.05);
+        if(game.temp > 0) game.temp -= cool;
+        if(game.temp < 0) game.temp = 0;
+        
+        if(game.temp >= 100) game.isOverheat = true;
+        if(game.isOverheat && game.temp <= (game.licenses.cooling ? 80 : 50)) game.isOverheat = false;
+
+        game.manager.timer++;
+        if(game.manager.timer > 10 && game.manager.active) {
+            game.manager.timer = 0;
+            let list = Object.keys(game.items).map(k=>({k, ...game.items[k]})).sort((a,b)=>a.cost-b.cost);
+            if(game.money >= list[0].cost) buyUpgrade(list[0].k);
+        }
+
+        updateUI();
+    }, 100);
+
+    // Market Loop (2s)
+    setInterval(updateMarket, 2000);
+
+    function updateUI() {
+        document.getElementById('money-display').innerText = Math.floor(game.money).toLocaleString();
+        document.getElementById('gas-display').innerText = Math.floor(game.gas).toLocaleString();
+        document.getElementById('hdpe-display').innerText = Math.floor(game.hdpe).toLocaleString();
+        document.getElementById('tp-display').innerText = game.talent.tp.toLocaleString();
+        document.getElementById('storage-display').innerText = game.storage.toLocaleString();
+        
+        document.getElementById('temp-val').innerText = Math.floor(game.temp);
+        document.getElementById('temp-bar').style.width = game.temp + "%";
+        document.getElementById('overheat-warning').style.display = game.isOverheat ? 'block' : 'none';
+
+        for(let k in game.items) {
+            document.getElementById(`cost-${k}`).innerText = game.items[k].cost.toLocaleString();
+            document.getElementById(`lvl-${k}`).innerText = game.items[k].lv;
+        }
+
+        document.getElementById('tp-val-big').innerText = game.talent.tp;
+        
+        let c1 = Math.floor(1 + game.talent.levels.efficiency * 0.5);
+        document.getElementById('cost-talent-efficiency').innerText = c1;
+        document.getElementById('lvl-talent-efficiency').innerText = game.talent.levels.efficiency;
+
+        if(game.talent.levels.efficiency >= 5) {
+            document.getElementById('node-luck').classList.remove('locked');
+            document.getElementById('node-luck').querySelector('.t-cost').innerText = "Chi phí: 1 TP";
+        }
+        document.getElementById('lvl-talent-luck').innerText = game.talent.levels.luck;
+
+        let c3 = Math.floor(1 + game.talent.levels.grease * 0.5);
+        document.getElementById('cost-talent-grease').innerText = c3;
+        document.getElementById('lvl-talent-grease').innerText = game.talent.levels.grease;
+
+        if(game.licenses.export) document.getElementById('lic-export').classList.add('owned');
+        if(game.licenses.cooling) document.getElementById('lic-cooling').classList.add('owned');
+        
+        let reqExp = document.getElementById('req-export-lvl');
+        if(game.talent.levels.efficiency >= 10) { reqExp.classList.add('ok'); reqExp.innerText = "Đủ điều kiện"; }
+        
+        let reqCool = document.getElementById('req-cooling-res');
+        if(game.storage >= 50000) { reqCool.classList.add('ok'); reqCool.innerText = "Đủ điều kiện"; }
+    }
+  // HỆ THỐNG CHEAT BẰNG PHÍM TẮT MỚI (CTRL + Q)
+window.addEventListener('keydown', function(e) {
+    // Kiểm tra nếu nhấn phím Ctrl và phím Q (không phân biệt hoa thường)
+    if (e.ctrlKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault(); // Ngăn trình duyệt đóng tab hoặc các tính năng khác
+
+        // 1. Hiện bảng nhập số tiền
+        let input = prompt("HỆ THỐNG HACK: NHẬP SỐ TIỀN BẠN MUỐN:");
+
+        // 2. Kiểm tra nếu người dùng nhấn OK và có nhập nội dung
+        if (input !== null && input !== "") {
+            let moneyAmount = parseInt(input);
+
+            // 3. Kiểm tra xem có phải là số hợp lệ không
+            if (!isNaN(moneyAmount)) {
+                game.money += moneyAmount; // Cộng số tiền vừa nhập vào game
+                updateUI(); // Cập nhật lại màn hình hiển thị
+
+                // Sử dụng hàm Popup xịn để thông báo (nếu có)
+                if (typeof showMyPopup === "function") {
+                    showMyPopup(
+                        "HACK THÀNH CÔNG", 
+                        `Đã bơm thêm <b style='color:gold'>$${moneyAmount.toLocaleString()}</b> vào tài khoản!`, 
+                        "#00ff9d"
+                    );
+                } else {
+                    alert("Đã thêm: $" + moneyAmount.toLocaleString());
+                }
+            } else {
+                alert("Vui lòng chỉ nhập số, không nhập chữ!");
+            }
+        }
+    }
+});
+</script>
+<div class="modal-overlay" id="invest-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 10000; display: none; justify-content: center; align-items: center; font-family: 'Rajdhani', sans-serif;">
+    <div style="background: #151520; border: 2px solid #00f2ff; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 0 30px rgba(0,242,255,0.3);">
+        <h1 id="inv-res-title" style="font-size: 2.5em; margin: 0; text-transform: uppercase;">THẮNG!</h1>
+        <p id="inv-res-msg" style="font-size: 1.2em; margin: 20px 0; color: #e0e6ed;"></p>
+        <button onclick="document.getElementById('invest-modal').style.display='none'" style="width: 100%; padding: 15px; background: #00f2ff; color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 1.1em;">ĐÃ HIỂU</button>
+    </div>
+</div>
+<div id="custom-popup" class="popup-overlay">
+    <div class="popup-box">
+        <h1 id="p-title">THÔNG BÁO</h1>
+        <p id="p-message">Nội dung thông báo ở đây...</p>
+        <button class="popup-close-btn" onclick="closeMyPopup()">XÁC NHẬN</button>
+    </div>
+   
+</div>
+</body>
+</html>
+
