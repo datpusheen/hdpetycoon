@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDPE Tycoon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #0f0f0f;
+            --card: #1a1a1a;
+            --border: #2a2a2a;
+            --primary: #00d4ff;
+            --secondary: #8b5cf6;
+            --gold: #fbbf24;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --text: #ffffff;
+            --text-dim: #888888;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
+
+        /* Stats Panel */
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-item:last-child { border-bottom: none; }
+
+        .stat-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .stat-label i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .stat-value.money { color: var(--gold); }
+        .stat-value.gas { color: var(--primary); }
+        .stat-value.hdpe { color: var(--secondary); }
+        .stat-value.tp { color: var(--success); }
+
+        /* Center Panel */
+        .center-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        #main-btn {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            background: linear-gradient(145deg, #222, #111);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.15s;
+            color: var(--primary);
+        }
+
+        #main-btn:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+
+        #main-btn:active {
+            transform: scale(0.95);
+        }
+
+        #main-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: var(--danger);
+        }
+
+        #main-btn i { font-size: 2.5rem; }
+        #main-btn span { font-size: 0.9rem; font-weight: 600; }
+
+        /* Temperature Bar */
+        .temp-container {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .temp-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .temp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--gold), var(--danger));
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        .temp-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .overheat-warning {
+            color: var(--danger);
+            font-weight: 600;
+            animation: blink 0.5s infinite;
+            display: none;
+        }
+
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* Action Buttons */
+        .action-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--border);
+        }
+
+        .action-btn.primary { border-color: var(--primary); color: var(--primary); }
+        .action-btn.gold { border-color: var(--gold); color: var(--gold); }
+
+        /* Tabs */
+        .tab-header {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover { background: var(--border); }
+        .tab-btn.active { background: var(--secondary); color: white; }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active { display: flex; flex-direction: column; gap: 8px; }
+
+        .tab-content::-webkit-scrollbar { width: 4px; }
+        .tab-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* Upgrade Items */
+        .upgrade-item {
+            background: rgba(255,255,255,0.02);
+            padding: 14px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .upgrade-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--border);
+        }
+
+        .upgrade-info h4 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .upgrade-info small {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+
+        .upgrade-cost {
+            text-align: right;
+        }
+
+        .upgrade-cost .price {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .upgrade-cost .level {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Talent Nodes */
+        .talent-node {
+            background: rgba(255,255,255,0.02);
+            padding: 14px;
+            border-radius: 8px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .talent-node:hover { background: rgba(255,255,255,0.05); }
+        .talent-node.locked { opacity: 0.4; }
+
+        .talent-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--success);
+        }
+
+        .talent-info { flex: 1; }
+        .talent-info h4 { font-size: 0.85rem; margin-bottom: 2px; }
+        .talent-info small { font-size: 0.7rem; color: var(--text-dim); }
+        .talent-cost { font-size: 0.75rem; color: var(--success); }
+
+        /* Market Chart */
+        .chart-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 200px;
+        }
+
+        .candle {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .candle-body {
+            width: 60%;
+            position: absolute;
+            min-height: 2px;
+        }
+
+        .candle-wick {
+            width: 1px;
+            position: absolute;
+        }
+
+        .market-price {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .market-price h2 {
+            font-size: 2.5rem;
+            color: var(--gold);
+        }
+
+        /* Investment Section */
+        .invest-section {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .invest-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .invest-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger), var(--gold), var(--success));
+            border-radius: 3px;
+            transition: width 0.05s;
+        }
+
+        .invest-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7f1d1d, #991b1b);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .invest-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            background: var(--card);
+            border-left: 3px solid var(--primary);
+            border-radius: 6px;
+            animation: slideIn 0.3s ease;
+            min-width: 200px;
+        }
+
+        .toast.error { border-color: var(--danger); }
+        .toast.success { border-color: var(--success); }
+        .toast.money { border-color: var(--gold); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-content {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-content h1 { font-size: 2rem; margin-bottom: 16px; }
+        .modal-content p { color: var(--text-dim); margin-bottom: 24px; }
+
+        .modal-btn {
+            padding: 12px 32px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: black;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Storage */
+        .storage-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            margin: 10px 0;
+        }
+
+        .storage-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .storage-actions button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .storage-actions button:hover { background: var(--border); }
+
+        /* Manager */
+        .manager-card {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .manager-card i { font-size: 3rem; color: var(--secondary); margin-bottom: 16px; }
+
+        .toggle-btn {
+            padding: 10px 24px;
+            border: none;
+            background: var(--border);
+            color: var(--text);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.on {
+            background: var(--secondary);
+        }
+
+        /* TP Buy */
+        .tp-buy {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tp-buy input {
+            width: 60px;
+            padding: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+        }
+
+        .tp-buy button {
+            flex: 1;
+            padding: 8px;
+            background: var(--success);
+            border: none;
+            border-radius: 6px;
+            color: black;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Auto Rate Display */
+        .auto-rate {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            margin-top: auto;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* License Items */
+        .license-item {
+            padding: 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .license-item.owned {
+            border-style: solid;
+            border-color: var(--gold);
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .license-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .license-header span { font-weight: 600; }
+        .license-header .price { color: var(--gold); }
+        .license-desc { font-size: 0.75rem; color: var(--text-dim); }
+        .license-req { font-size: 0.7rem; color: var(--danger); margin-top: 6px; }
+        .license-req.ok { color: var(--success); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .panel { min-height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Left Panel: Stats -->
+    <div class="panel">
+        <h3>Thống Kê</h3>
+        
+        <div class="stat-item">
+            <span class="stat-label"><i class="fas fa-wallet"></i> Tài sản</span>
+            <span class="stat-value money">$<span id="money">0</span></span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label"><i class="fas fa-wind"></i> Khí Gas</span>
+            <span class="stat-value gas"><span id="gas">0</span> L</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label"><i class="fas fa-cube"></i> Nhựa HDPE</span>
+            <span class="stat-value hdpe"><span id="hdpe">0</span> kg</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label"><i class="fas fa-star"></i> Điểm TP</span>
+            <span class="stat-value tp"><span id="tp">0</span></span>
+        </div>
+
+        <div class="invest-section">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                <span style="color: var(--text-dim)">Tỷ lệ thắng:</span>
+                <span id="win-chance" style="color: var(--gold); font-weight: 600;">50%</span>
+            </div>
+            <div class="invest-bar">
+                <div id="invest-fill" class="invest-fill" style="width: 50%;"></div>
+            </div>
+            <button class="invest-btn" onclick="investRisky()">
+                <i class="fas fa-dice"></i> Đầu Tư Mạo Hiểm
+            </button>
+            <div style="font-size: 0.7rem; color: var(--text-dim); text-align: center; margin-top: 6px;">
+                Cần tối thiểu $5,000
+            </div>
+        </div>
+
+        <div class="auto-rate">
+            Sản lượng tự động: <span id="auto-rate">0</span>/s
+        </div>
+    </div>
+
+    <!-- Center Panel: Production -->
+    <div class="panel center-panel">
+        <button id="main-btn" onclick="clickMine(event)">
+            <i class="fas fa-compress-alt"></i>
+            <span>HÚT KHÍ</span>
+        </button>
+
+        <div class="temp-container">
+            <div class="temp-bar">
+                <div id="temp-fill" class="temp-fill"></div>
+            </div>
+            <div class="temp-text">
+                Nhiệt độ: <span id="temp-val">0</span>°C
+            </div>
+            <div id="overheat" class="overheat-warning">⚠️ Máy quá nhiệt! Đang làm mát...</div>
+        </div>
+
+        <div class="action-row">
+            <button class="action-btn primary" onclick="convertResource()">
+                <i class="fas fa-compress-arrows-alt"></i> Nén Khí
+            </button>
+            <button class="action-btn gold" onclick="sellAll()">
+                <i class="fas fa-dollar-sign"></i> Bán Hết
+            </button>
+        </div>
+    </div>
+
+    <!-- Right Panel: Tabs -->
+    <div class="panel">
+        <div class="tab-header">
+            <button class="tab-btn active" onclick="switchTab('upgrade')"><i class="fas fa-hammer"></i></button>
+            <button class="tab-btn" onclick="switchTab('talent')"><i class="fas fa-star"></i></button>
+            <button class="tab-btn" onclick="switchTab('manager')"><i class="fas fa-user-tie"></i></button>
+            <button class="tab-btn" onclick="switchTab('storage')"><i class="fas fa-warehouse"></i></button>
+            <button class="tab-btn" onclick="switchTab('market')"><i class="fas fa-chart-line"></i></button>
+        </div>
+
+        <!-- Upgrade Tab -->
+        <div id="tab-upgrade" class="tab-content active">
+            <div class="upgrade-item" onclick="buyUpgrade('clicker')">
+                <div class="upgrade-info">
+                    <h4><i class="fas fa-mouse-pointer"></i> Van Áp Suất</h4>
+                    <small>Tăng lượng khí mỗi lần bấm</small>
+                </div>
+                <div class="upgrade-cost">
+                    <div class="price">$<span id="cost-clicker">50</span></div>
+                    <div class="level">Lv.<span id="lvl-clicker">1</span></div>
+                </div>
+            </div>
+            <div class="upgrade-item" onclick="buyUpgrade('miner')">
+                <div class="upgrade-info">
+                    <h4><i class="fas fa-robot"></i> Máy Hút Tự Động</h4>
+                    <small>Tự động hút khí mỗi giây</small>
+                </div>
+                <div class="upgrade-cost">
+                    <div class="price">$<span id="cost-miner">200</span></div>
+                    <div class="level">Lv.<span id="lvl-miner">0</span></div>
+                </div>
+            </div>
+            <div class="upgrade-item" onclick="buyUpgrade('coolant')">
+                <div class="upgrade-info">
+                    <h4><i class="fas fa-snowflake"></i> Hệ Thống Tản Nhiệt</h4>
+                    <small>Giảm nhiệt độ nhanh hơn</small>
+                </div>
+                <div class="upgrade-cost">
+                    <div class="price">$<span id="cost-coolant">500</span></div>
+                    <div class="level">Lv.<span id="lvl-coolant">1</span></div>
+                </div>
+            </div>
+            <div class="upgrade-item" onclick="buyUpgrade('compressor')">
+                <div class="upgrade-info">
+                    <h4><i class="fas fa-compress"></i> Máy Nén Auto</h4>
+                    <small>Tự động nén khí sang nhựa</small>
+                </div>
+                <div class="upgrade-cost">
+                    <div class="price">$<span id="cost-compressor">1000</span></div>
+                    <div class="level">Lv.<span id="lvl-compressor">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Talent Tab -->
+        <div id="tab-talent" class="tab-content">
+            <div class="tp-buy">
+                <input type="number" id="tp-input" value="1" min="1">
+                <button onclick="buyTP()">Mua TP ($1k/điểm)</button>
+            </div>
+
+            <div class="talent-node" onclick="upgradeTalent('efficiency')">
+                <div class="talent-icon"><i class="fas fa-hand-sparkles"></i></div>
+                <div class="talent-info">
+                    <h4>Hiệu Suất Tay</h4>
+                    <small>+10% lực hút khi click</small>
+                </div>
+                <div>
+                    <div class="talent-cost"><span id="cost-eff">1</span> TP</div>
+                    <div class="level">Lv.<span id="lvl-eff">0</span>/20</div>
+                </div>
+            </div>
+
+            <div class="talent-node" id="node-luck" onclick="upgradeTalent('luck')">
+                <div class="talent-icon"><i class="fas fa-dice"></i></div>
+                <div class="talent-info">
+                    <h4>May Mắn</h4>
+                    <small>5% cơ hội hút x10 khí</small>
+                </div>
+                <div>
+                    <div class="talent-cost" id="cost-luck">Cần Hiệu Suất Lv.5</div>
+                    <div class="level">Lv.<span id="lvl-luck">0</span>/10</div>
+                </div>
+            </div>
+
+            <div class="talent-node" onclick="upgradeTalent('grease')">
+                <div class="talent-icon"><i class="fas fa-oil-can"></i></div>
+                <div class="talent-info">
+                    <h4>Bôi Trơn Máy</h4>
+                    <small>+5% tốc độ Auto Miner</small>
+                </div>
+                <div>
+                    <div class="talent-cost"><span id="cost-grease">1</span> TP</div>
+                    <div class="level">Lv.<span id="lvl-grease">0</span>/50</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px;">Giấy Phép</h3>
+
+            <div class="license-item" id="lic-export" onclick="buyLicense('export')">
+                <div class="license-header">
+                    <span><i class="fas fa-globe"></i> Xuất Khẩu</span>
+                    <span class="price">$500,000</span>
+                </div>
+                <div class="license-desc">Giá bán nhựa +20%</div>
+                <div class="license-req" id="req-export">Cần: Hiệu Suất Lv.10</div>
+            </div>
+
+            <div class="license-item" id="lic-cooling" onclick="buyLicense('cooling')">
+                <div class="license-header">
+                    <span><i class="fas fa-snowflake"></i> ISO Môi Trường</span>
+                    <span class="price">$1,000,000</span>
+                </div>
+                <div class="license-desc">Giảm 50% nhiệt sinh ra</div>
+                <div class="license-req" id="req-cooling">Cần: 50,000kg trong kho</div>
+            </div>
+        </div>
+
+        <!-- Manager Tab -->
+        <div id="tab-manager" class="tab-content">
+            <div class="manager-card">
+                <i class="fas fa-user-astronaut"></i>
+                <h4>Giám Đốc Kỹ Thuật</h4>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin: 16px 0;">
+                    Tự động nâng cấp máy móc
+                </p>
+                <div id="mgr-locked">
+                    <button class="action-btn" style="width: 100%; justify-content: center;" onclick="hireManager()">
+                        Thuê: $1,000,000
+                    </button>
+                </div>
+                <div id="mgr-unlocked" style="display: none;">
+                    <p style="margin-bottom: 12px;">Trạng thái: <span id="mgr-status" style="color: var(--secondary);">TẮT</span></p>
+                    <button id="mgr-toggle" class="toggle-btn" onclick="toggleManager()">BẬT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Storage Tab -->
+        <div id="tab-storage" class="tab-content">
+            <h4 style="text-align: center; margin-bottom: 8px;">Kho Trữ Nhựa</h4>
+            <div style="text-align: center; font-size: 2rem; color: var(--secondary); margin-bottom: 16px;">
+                <span id="storage">0</span> kg
+            </div>
+            <input type="number" class="storage-input" id="storage-input" placeholder="Nhập số lượng...">
+            <div class="storage-actions">
+                <button onclick="depositAll()"><i class="fas fa-arrow-down"></i> Gửi Hết</button>
+                <button onclick="withdrawX()"><i class="fas fa-arrow-up"></i> Rút Ra</button>
+            </div>
+        </div>
+
+        <!-- Market Tab -->
+        <div id="tab-market" class="tab-content">
+            <div class="market-price">
+                <div style="color: var(--text-dim); font-size: 0.85rem;">Giá HDPE hiện tại</div>
+                <h2>$<span id="price">10.00</span></h2>
+            </div>
+            <div class="chart-container" id="chart"></div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 8px;">
+                Giá cập nhật mỗi 2 giây
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h1 id="modal-title">Thông Báo</h1>
+        <p id="modal-msg"></p>
+        <button class="modal-btn" onclick="closeModal()">Đã Hiểu</button>
+    </div>
+</div>
+
+<script>
+// Game State
+const game = {
+    money: 0, gas: 0, hdpe: 0, temp: 0, storage: 0, isOverheat: false,
+    manager: { owned: false, active: false, timer: 0 },
+    items: {
+        clicker: { lv: 1, cost: 50 },
+        miner: { lv: 0, cost: 200 },
+        coolant: { lv: 1, cost: 500 },
+        compressor: { lv: 0, cost: 1000 }
+    },
+    invest: { chance: 50, dir: 1 },
+    talent: { tp: 0, efficiency: 0, luck: 0, grease: 0 },
+    licenses: { export: false, cooling: false },
+    market: { price: 10, history: [] }
+};
+
+// Toast System
+function toast(msg, type = 'normal') {
+    const container = document.getElementById('toast-container');
+    while (container.children.length >= 3) container.removeChild(container.firstChild);
+    
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    container.appendChild(t);
+    
+    setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 300);
+    }, 2500);
+}
+
+// Modal
+function showModal(title, msg, color = 'var(--primary)') {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-title').style.color = color;
+    document.getElementById('modal-msg').innerHTML = msg;
+    document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+}
+
+// Main Click
+function clickMine(e) {
+    if (game.isOverheat) {
+        toast('Máy đang quá nhiệt!', 'error');
+        return;
+    }
+
+    let amount = 1 + game.items.clicker.lv * 0.5;
+    amount *= 1 + game.talent.efficiency * 0.1;
+
+    // Crit check
+    if (Math.random() < game.talent.luck * 0.05) {
+        amount *= 10;
+        toast('CRIT x10!', 'success');
+    }
+
+    game.gas += amount;
+    game.temp += game.licenses.cooling ? 1 : 2;
+    if (game.temp > 100) game.temp = 100;
+    if (game.temp >= 100) game.isOverheat = true;
+
+    updateUI();
+}
+
+// Convert & Sell
+function convertResource() {
+    if (game.gas < 5) {
+        toast('Cần 5L khí!', 'error');
+        return;
+    }
+    const packs = Math.floor(game.gas / 5);
+    game.gas -= packs * 5;
+    game.hdpe += packs;
+    toast(`Nén được ${packs}kg nhựa`, 'success');
+    updateUI();
+}
+
+function sellAll() {
+    if (game.hdpe <= 0) {
+        toast('Không có hàng!', 'error');
+        return;
+    }
+    let price = game.market.price;
+    if (game.licenses.export) price *= 1.2;
+    const earned = Math.floor(game.hdpe * price);
+    game.money += earned;
+    game.hdpe = 0;
+    toast(`Thu về $${earned.toLocaleString()}`, 'money');
+    updateUI();
+}
+
+// Upgrades
+function buyUpgrade(type) {
+    const item = game.items[type];
+    if (game.money >= item.cost) {
+        game.money -= item.cost;
+        item.lv++;
+        item.cost = Math.floor(item.cost * 1.5);
+        toast(`Nâng cấp thành công!`, 'success');
+        updateUI();
+    } else {
+        toast('Không đủ tiền!', 'error');
+    }
+}
+
+// Talents
+function buyTP() {
+    const amount = parseInt(document.getElementById('tp-input').value) || 1;
+    const cost = amount * 1000;
+    if (game.money >= cost) {
+        game.money -= cost;
+        game.talent.tp += amount;
+        toast(`Mua ${amount} TP`, 'success');
+        updateUI();
+    } else {
+        toast(`Cần $${cost.toLocaleString()}`, 'error');
+    }
+}
+
+function upgradeTalent(type) {
+    const maxLvl = { efficiency: 20, luck: 10, grease: 50 };
+    const current = game.talent[type];
+    
+    if (current >= maxLvl[type]) {
+        toast('Đã max cấp!', 'error');
+        return;
+    }
+    
+    if (type === 'luck' && game.talent.efficiency < 5) {
+        toast('Cần Hiệu Suất Lv.5!', 'error');
+        return;
+    }
+
+    const cost = Math.floor(1 + current * 0.5);
+    if (game.talent.tp >= cost) {
+        game.talent.tp -= cost;
+        game.talent[type]++;
+        updateUI();
+    } else {
+        toast(`Cần ${cost} TP!`, 'error');
+    }
+}
+
+function buyLicense(type) {
+    if (game.licenses[type]) return;
+    
+    const costs = { export: 500000, cooling: 1000000 };
+    const reqs = {
+        export: () => game.talent.efficiency >= 10,
+        cooling: () => game.storage >= 50000
+    };
+
+    if (!reqs[type]()) {
+        toast('Chưa đủ điều kiện!', 'error');
+        return;
+    }
+
+    if (game.money >= costs[type]) {
+        game.money -= costs[type];
+        game.licenses[type] = true;
+        toast('Mua giấy phép thành công!', 'success');
+        updateUI();
+    } else {
+        toast('Không đủ tiền!', 'error');
+    }
+}
+
+// Storage
+function depositAll() {
+    if (game.hdpe > 0) {
+        game.storage += game.hdpe;
+        game.hdpe = 0;
+        updateUI();
+    }
+}
+
+function withdrawX() {
+    const v = parseInt(document.getElementById('storage-input').value);
+    if (v && game.storage >= v) {
+        game.storage -= v;
+        game.hdpe += v;
+        updateUI();
+    } else {
+        toast('Không đủ hàng trong kho!', 'error');
+    }
+}
+
+// Manager
+function hireManager() {
+    if (game.money >= 1000000) {
+        game.money -= 1000000;
+        game.manager.owned = true;
+        document.getElementById('mgr-locked').style.display = 'none';
+        document.getElementById('mgr-unlocked').style.display = 'block';
+        updateUI();
+    } else {
+        toast('Không đủ tiền!', 'error');
+    }
+}
+
+function toggleManager() {
+    game.manager.active = !game.manager.active;
+    updateUI();
+}
+
+// Investment
+function investRisky() {
+    if (game.money < 5000) {
+        showModal('Cảnh Báo', 'Cần tối thiểu $5,000 để đầu tư!', 'var(--danger)');
+        return;
+    }
+
+    const allIn = game.money;
+    const win = Math.random() * 100 <= game.invest.chance;
+
+    if (win) {
+        game.money *= 2;
+        showModal('Thắng Lớn!', `Tài sản nhân đôi!<br>+$${allIn.toLocaleString()}`, 'var(--success)');
+    } else {
+        game.money = 0;
+        showModal('Thua Cuộc', 'Mất trắng tất cả...', 'var(--danger)');
+    }
+    updateUI();
+}
+
+// Tabs
+function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    
+    const tabs = ['upgrade', 'talent', 'manager', 'storage', 'market'];
+    document.querySelectorAll('.tab-btn')[tabs.indexOf(tab)].classList.add('active');
+}
+
+// Market
+function updateMarket() {
+    const change = (Math.random() - 0.5) * 2;
+    const open = game.market.price;
+    let close = Math.max(5, Math.min(100, open + change));
+    game.market.price = close;
+
+    game.market.history.push({
+        open, close,
+        high: Math.max(open, close) + Math.random(),
+        low: Math.min(open, close) - Math.random()
+    });
+    
+    if (game.market.history.length > 30) game.market.history.shift();
+    drawChart();
+}
+
+function drawChart() {
+    const container = document.getElementById('chart');
+    container.innerHTML = '';
+
+    if (game.market.history.length === 0) return;
+
+    let min = Infinity, max = -Infinity;
+    game.market.history.forEach(c => {
+        min = Math.min(min, c.low);
+        max = Math.max(max, c.high);
+    });
+    const range = max - min || 1;
+
+    game.market.history.forEach(c => {
+        const isUp = c.close >= c.open;
+        const color = isUp ? 'var(--success)' : 'var(--danger)';
+
+        const candle = document.createElement('div');
+        candle.className = 'candle';
+        candle.style.height = '100%';
+
+        const hPct = ((c.high - min) / range) * 100;
+        const lPct = ((c.low - min) / range) * 100;
+        const oPct = ((c.open - min) / range) * 100;
+        const cPct = ((c.close - min) / range) * 100;
+
+        const wick = document.createElement('div');
+        wick.className = 'candle-wick';
+        wick.style.bottom = lPct + '%';
+        wick.style.height = (hPct - lPct) + '%';
+        wick.style.background = color;
+
+        const body = document.createElement('div');
+        body.className = 'candle-body';
+        body.style.bottom = Math.min(oPct, cPct) + '%';
+        body.style.height = Math.max(1, Math.abs(cPct - oPct)) + '%';
+        body.style.background = color;
+
+        candle.appendChild(wick);
+        candle.appendChild(body);
+        container.appendChild(candle);
+    });
+
+    document.getElementById('price').textContent = game.market.price.toFixed(2);
+}
+
+// UI Update
+function updateUI() {
+    document.getElementById('money').textContent = Math.floor(game.money).toLocaleString();
+    document.getElementById('gas').textContent = Math.floor(game.gas).toLocaleString();
+    document.getElementById('hdpe').textContent = Math.floor(game.hdpe).toLocaleString();
+    document.getElementById('tp').textContent = game.talent.tp;
+    document.getElementById('storage').textContent = game.storage.toLocaleString();
+
+    document.getElementById('temp-val').textContent = Math.floor(game.temp);
+    document.getElementById('temp-fill').style.width = game.temp + '%';
+    document.getElementById('overheat').style.display = game.isOverheat ? 'block' : 'none';
+    document.getElementById('main-btn').classList.toggle('disabled', game.isOverheat);
+
+    // Items
+    for (let k in game.items) {
+        document.getElementById('cost-' + k).textContent = game.items[k].cost.toLocaleString();
+        document.getElementById('lvl-' + k).textContent = game.items[k].lv;
+    }
+
+    // Talents
+    document.getElementById('lvl-eff').textContent = game.talent.efficiency;
+    document.getElementById('cost-eff').textContent = Math.floor(1 + game.talent.efficiency * 0.5);
+    document.getElementById('lvl-luck').textContent = game.talent.luck;
+    document.getElementById('lvl-grease').textContent = game.talent.grease;
+    document.getElementById('cost-grease').textContent = Math.floor(1 + game.talent.grease * 0.5);
+
+    const luckNode = document.getElementById('node-luck');
+    if (game.talent.efficiency >= 5) {
+        luckNode.classList.remove('locked');
+        document.getElementById('cost-luck').textContent = '1 TP';
+    } else {
+        luckNode.classList.add('locked');
+    }
+
+    // Licenses
+    if (game.licenses.export) document.getElementById('lic-export').classList.add('owned');
+    if (game.licenses.cooling) document.getElementById('lic-cooling').classList.add('owned');
+
+    const reqExp = document.getElementById('req-export');
+    reqExp.classList.toggle('ok', game.talent.efficiency >= 10);
+    reqExp.textContent = game.talent.efficiency >= 10 ? '✓ Đủ điều kiện' : 'Cần: Hiệu Suất Lv.10';
+
+    const reqCool = document.getElementById('req-cooling');
+    reqCool.classList.toggle('ok', game.storage >= 50000);
+    reqCool.textContent = game.storage >= 50000 ? '✓ Đủ điều kiện' : 'Cần: 50,000kg trong kho';
+
+    // Manager
+    if (game.manager.owned) {
+        document.getElementById('mgr-status').textContent = game.manager.active ? 'BẬT' : 'TẮT';
+        document.getElementById('mgr-toggle').textContent = game.manager.active ? 'TẮT' : 'BẬT';
+        document.getElementById('mgr-toggle').classList.toggle('on', game.manager.active);
+    }
+
+    // Auto rate
+    const autoRate = game.items.miner.lv * 0.2 * (1 + game.talent.grease * 0.05);
+    document.getElementById('auto-rate').textContent = autoRate.toFixed(1);
+}
+
+// Game Loop
+setInterval(() => {
+    // Invest bar
+    game.invest.chance += game.invest.dir * 2;
+    if (game.invest.chance >= 60 || game.invest.chance <= 0) game.invest.dir *= -1;
+    document.getElementById('invest-fill').style.width = game.invest.chance + '%';
+    document.getElementById('win-chance').textContent = Math.floor(game.invest.chance) + '%';
+
+    // Auto miner
+    if (game.items.miner.lv > 0 && !game.isOverheat) {
+        const speedMult = 1 + game.talent.grease * 0.05;
+        game.gas += (game.items.miner.lv * 0.2 * speedMult) / 10;
+        game.temp += 0.05;
+    }
+
+    // Auto compressor
+    if (game.items.compressor.lv > 0 && game.gas >= 5) {
+        const packs = Math.min(game.items.compressor.lv, Math.floor(game.gas / 5));
+        game.gas -= packs * 5;
+        game.hdpe += packs;
+    }
+
+    // Cooling
+    const coolRate = 0.1 + game.items.coolant.lv * 0.05;
+    if (game.temp > 0) game.temp -= coolRate;
+    if (game.temp < 0) game.temp = 0;
+
+    // Overheat recovery
+    if (game.isOverheat && game.temp <= (game.licenses.cooling ? 80 : 50)) {
+        game.isOverheat = false;
+    }
+
+    // Manager auto-upgrade
+    if (game.manager.active) {
+        game.manager.timer++;
+        if (game.manager.timer > 10) {
+            game.manager.timer = 0;
+            const sorted = Object.entries(game.items).sort((a, b) => a[1].cost - b[1].cost);
+            if (game.money >= sorted[0][1].cost) buyUpgrade(sorted[0][0]);
+        }
+    }
+
+    updateUI();
+}, 100);
+
+// Market update
+setInterval(updateMarket, 2000);
+
+// Cheat: Ctrl+Q
+window.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key.toLowerCase() === 'q') {
+        e.preventDefault();
+        const input = prompt('Nhập số tiền muốn thêm:');
+        if (input) {
+            const amount = parseInt(input);
+            if (!isNaN(amount)) {
+                game.money += amount;
+                updateUI();
+                showModal('Cheat', `Đã thêm $${amount.toLocaleString()}`, 'var(--success)');
+            }
+        }
+    }
+});
+
+// Init
+updateUI();
+</script>
+
+</body>
+</html>
